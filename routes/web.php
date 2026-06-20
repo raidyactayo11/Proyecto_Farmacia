@@ -1,31 +1,81 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\configuracionesController;
-use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\MedicamentoController;
+use App\Http\Controllers\ClienteController;
+use App\Http\Controllers\VentaController;
 
-Route::get('/', [dashboardController::class, 'index'])->name('dashboard.index');
+/*
+|--------------------------------------------------------------------------
+| DASHBOARD
+|--------------------------------------------------------------------------
+*/
 
-Route::get('configuraciones', [configuracionesController::class, 'index'])
+Route::get('/', [dashboardController::class, 'index'])
+    ->name('dashboard.index');
+
+/*
+|--------------------------------------------------------------------------
+| CONFIGURACIONES
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/configuraciones', [configuracionesController::class, 'index'])
     ->name('configuraciones.index');
 
 /*
-|---------------------------------
-| PRODUCTOS (CRUD)
-|---------------------------------
+|--------------------------------------------------------------------------
+| MEDICAMENTOS
+|--------------------------------------------------------------------------
 */
-Route::get('productos', [ProductoController::class, 'index'])
-    ->name('productos.index');
 
-Route::post('productos', [ProductoController::class, 'store'])
-    ->name('productos.store');
+Route::get('/medicamentos', [MedicamentoController::class, 'index'])
+    ->name('medicamentos.index');
 
-Route::get('productos/{producto}/edit', [ProductoController::class, 'edit'])
-    ->name('productos.edit');
+Route::post('/medicamentos', [MedicamentoController::class, 'store'])
+    ->name('medicamentos.store');
 
-Route::put('productos/{producto}', [ProductoController::class, 'update'])
-    ->name('productos.update');
+Route::get('/medicamentos/{medicamento}/edit', [MedicamentoController::class, 'edit'])
+    ->name('medicamentos.edit');
 
-Route::delete('productos/{producto}', [ProductoController::class, 'destroy'])
-    ->name('productos.destroy');
+Route::put('/medicamentos/{medicamento}', [MedicamentoController::class, 'update'])
+    ->name('medicamentos.update');
+
+Route::delete('/medicamentos/{medicamento}', [MedicamentoController::class, 'destroy'])
+    ->name('medicamentos.destroy');
+
+/*
+|--------------------------------------------------------------------------
+| CLIENTES
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/clientes', [ClienteController::class, 'index'])
+    ->name('clientes.index');
+
+Route::post('/clientes', [ClienteController::class, 'store'])
+    ->name('clientes.store');
+
+Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])
+    ->name('clientes.update');
+
+Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])
+    ->name('clientes.destroy');
+
+/*
+|--------------------------------------------------------------------------
+| VENTAS
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/ventas', [VentaController::class, 'index'])
+    ->name('ventas.index');
+
+Route::post('/ventas', [VentaController::class, 'store'])
+    ->name('ventas.store');
+
+Route::delete('/ventas/{venta}', [VentaController::class, 'destroy'])
+    ->name('ventas.destroy');

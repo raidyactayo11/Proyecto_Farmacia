@@ -6,13 +6,13 @@
 
     {{-- HEADER --}}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Productos</h3>
+        <h3>Medicamentos</h3>
 
         {{-- BOTÓN NUEVO --}}
         <button class="btn btn-primary"
                 data-bs-toggle="modal"
                 data-bs-target="#modalCrear">
-            Nuevo Producto
+            Nuevo Medicamento
         </button>
     </div>
 
@@ -24,19 +24,21 @@
     @endif
 
     {{-- ERRORES --}}
-    @if($errors->any())
-        <div class="alert alert-danger">
-            <ul class="mb-0">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
+   @if($errors->any())
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+        <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Error en el formulario',
+            html: `{!! implode('<br>', $errors->all()) !!}`
+        });
+        </script>
     @endif
 
     {{-- BUSCADOR --}}
     <input type="text" id="buscar" class="form-control mb-3"
-           placeholder="Buscar producto...">
+           placeholder="Buscar medicamento...">
 
     {{-- TABLA --}}
     <div class="card">
@@ -55,32 +57,32 @@
                 </thead>
 
                 <tbody>
-                    @foreach($productos as $producto)
+                    @foreach($medicamentos as $medicamento)
                         <tr>
-                            <td>{{ $producto->id }}</td>
-                            <td>{{ $producto->nombre }}</td>
-                            <td>{{ $producto->precio }}</td>
-                            <td>{{ $producto->stock }}</td>
-                            <td>{{ $producto->descripcion }}</td>
+                            <td>{{ $medicamento->id }}</td>
+                            <td>{{ $medicamento->nombre }}</td>
+                            <td>{{ $medicamento->precio }}</td>
+                            <td>{{ $medicamento->stock }}</td>
+                            <td>{{ $medicamento->descripcion }}</td>
 
                             <td>
 
                                 {{-- BOTÓN EDITAR --}}
                                 <button class="btn btn-warning btn-sm"
                                         data-bs-toggle="modal"
-                                        data-bs-target="#modalEditar{{ $producto->id }}">
+                                        data-bs-target="#modalEditar{{ $medicamento->id }}">
                                     Editar
                                 </button>
 
                                 {{-- ELIMINAR --}}
-                                <form action="{{ route('productos.destroy', $producto->id) }}"
+                                <form action="{{ route('medicamentos.destroy', $medicamento->id) }}"
                                       method="POST"
                                       style="display:inline;">
                                     @csrf
                                     @method('DELETE')
 
                                     <button class="btn btn-danger btn-sm"
-                                            onclick="return confirm('¿Eliminar producto?')">
+                                            onclick="return confirm('¿Eliminar medicamento?')">
                                         Eliminar
                                     </button>
                                 </form>
@@ -89,16 +91,16 @@
                         </tr>
 
                         {{-- MODAL EDITAR --}}
-                        <div class="modal fade" id="modalEditar{{ $producto->id }}" tabindex="-1">
+                        <div class="modal fade" id="modalEditar{{ $medicamento->id }}" tabindex="-1">
                             <div class="modal-dialog">
                                 <div class="modal-content">
 
-                                    <form action="{{ route('productos.update', $producto->id) }}" method="POST">
+                                    <form action="{{ route('medicamentos.update', $medicamento->id) }}" method="POST">
                                         @csrf
                                         @method('PUT')
 
                                         <div class="modal-header">
-                                            <h5 class="modal-title">Editar Producto</h5>
+                                            <h5 class="modal-title">Editar Medicamento</h5>
                                             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                                         </div>
 
@@ -107,25 +109,25 @@
                                             <div class="mb-2">
                                                 <label>Nombre</label>
                                                 <input type="text" name="nombre" class="form-control"
-                                                       value="{{ $producto->nombre }}">
+                                                       value="{{ $medicamento->nombre }}">
                                             </div>
 
                                             <div class="mb-2">
                                                 <label>Precio</label>
                                                 <input type="number" step="0.01" name="precio" class="form-control"
-                                                       value="{{ $producto->precio }}">
+                                                       value="{{ $medicamento->precio }}">
                                             </div>
 
                                             <div class="mb-2">
                                                 <label>Stock</label>
                                                 <input type="number" name="stock" class="form-control"
-                                                       value="{{ $producto->stock }}">
+                                                       value="{{ $medicamento->stock }}">
                                             </div>
 
                                             <div class="mb-2">
                                                 <label>Descripción</label>
                                                 <input type="text" name="descripcion" class="form-control"
-                                                       value="{{ $producto->descripcion }}">
+                                                       value="{{ $medicamento->descripcion }}">
                                             </div>
 
                                         </div>
@@ -161,11 +163,11 @@
     <div class="modal-dialog">
         <div class="modal-content">
 
-            <form action="{{ route('productos.store') }}" method="POST">
+            <form action="{{ route('medicamentos.store') }}" method="POST">
                 @csrf
 
                 <div class="modal-header">
-                    <h5 class="modal-title">Nuevo Producto</h5>
+                    <h5 class="modal-title">Nuevo Medicamento</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
 
@@ -223,5 +225,25 @@ document.getElementById("buscar").addEventListener("keyup", function() {
     });
 });
 </script>
+
+
+
+@if($errors->any())
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+@if($errors->any())
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+Swal.fire({
+    icon: 'error',
+    title: 'Error en el formulario',
+    html: `{!! implode('<br>', $errors->all()) !!}`
+});
+</script>
+@endif
+
+</script>
+@endif
 
 @endsection
