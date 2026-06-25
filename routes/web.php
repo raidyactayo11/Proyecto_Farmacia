@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\dashboardController;
 use App\Http\Controllers\configuracionesController;
+use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MedicamentoController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\VentaController;
@@ -28,24 +29,22 @@ Route::get('/configuraciones', [configuracionesController::class, 'index'])
 
 /*
 |--------------------------------------------------------------------------
+| CATEGORÍAS
+|--------------------------------------------------------------------------
+*/
+
+Route::resource('categorias', CategoriaController::class)
+    ->parameters(['categorias' => 'categoria'])
+    ->except('show');
+
+/*
+|--------------------------------------------------------------------------
 | MEDICAMENTOS
 |--------------------------------------------------------------------------
 */
 
-Route::get('/medicamentos', [MedicamentoController::class, 'index'])
-    ->name('medicamentos.index');
-
-Route::post('/medicamentos', [MedicamentoController::class, 'store'])
-    ->name('medicamentos.store');
-
-Route::get('/medicamentos/{medicamento}/edit', [MedicamentoController::class, 'edit'])
-    ->name('medicamentos.edit');
-
-Route::put('/medicamentos/{medicamento}', [MedicamentoController::class, 'update'])
-    ->name('medicamentos.update');
-
-Route::delete('/medicamentos/{medicamento}', [MedicamentoController::class, 'destroy'])
-    ->name('medicamentos.destroy');
+Route::resource('medicamentos', MedicamentoController::class)
+    ->except('show');
 
 /*
 |--------------------------------------------------------------------------
@@ -53,17 +52,8 @@ Route::delete('/medicamentos/{medicamento}', [MedicamentoController::class, 'des
 |--------------------------------------------------------------------------
 */
 
-Route::get('/clientes', [ClienteController::class, 'index'])
-    ->name('clientes.index');
-
-Route::post('/clientes', [ClienteController::class, 'store'])
-    ->name('clientes.store');
-
-Route::put('/clientes/{cliente}', [ClienteController::class, 'update'])
-    ->name('clientes.update');
-
-Route::delete('/clientes/{cliente}', [ClienteController::class, 'destroy'])
-    ->name('clientes.destroy');
+Route::resource('clientes', ClienteController::class)
+    ->except('show');
 
 /*
 |--------------------------------------------------------------------------

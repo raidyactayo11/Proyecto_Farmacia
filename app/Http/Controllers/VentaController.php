@@ -2,27 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Venta;
 use App\Models\Cliente;
-use App\Models\Medicamento;
 use App\Models\DetalleVenta;
+use App\Models\Medicamento;
+use App\Models\Venta;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
+use Throwable;
 
 class VentaController extends Controller
 {
     public function index()
     {
-        $clientes = Cliente::all();
-
-        $medicamentos = Medicamento::all();
+        $clientes = Cliente::orderBy('nombre')->get();
+        $medicamentos = Medicamento::orderBy('nombre')->get();
 
         $ventas = Venta::with([
             'cliente',
-            'detalles.medicamento'
+            'detalles.medicamento',
         ])
-        ->orderBy('id', 'desc')
-        ->get();
+            ->orderByDesc('id')
+            ->get();
 
         return view('ventas.index', compact(
             'clientes',
@@ -33,79 +34,77 @@ class VentaController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'cliente_id' => 'required',
-            'medicamento_id' => 'required|array',
-            'cantidad' => 'required|array'
+        $datos = $request->validate([
+            'cliente_id' => 'required|integer|exists:clientes,id',
+            'medicamento_id' => 'required|array|min:1',
+            'medicamento_id.*' => 'required|integer|exists:medicamentos,id',
+            'cantidad' => 'required|array|min:1',
+            'cantidad.*' => 'required|integer|min:1',
         ], [
             'cliente_id.required' => 'Seleccione un cliente.',
             'medicamento_id.required' => 'Seleccione al menos un medicamento.',
-            'cantidad.required' => 'Ingrese cantidades.'
+            'cantidad.required' => 'Ingrese las cantidades.',
+            'cantidad.*.min' => 'Las cantidades deben ser mayores que cero.',
         ]);
 
-        DB::beginTransaction();
+        if (count($datos['medicamento_id']) !== count($datos['cantidad'])) {
+            throw ValidationException::withMessages([
+                'cantidad' => 'La información de los medicamentos y sus cantidades está incompleta.',
+            ]);
+        }
 
         try {
+            DB::transaction(function () use ($datos) {
+                $total = 0;
 
-            $total = 0;
-
-            // Crear venta vacía primero
-            $venta = Venta::create([
-                'cliente_id' => $request->cliente_id,
-                'fecha' => now(),
-                'total' => 0
-            ]);
-
-            foreach ($request->medicamento_id as $index => $med_id) {
-
-                $medicamento = Medicamento::findOrFail($med_id);
-
-                $cantidad = $request->cantidad[$index];
-
-                // VALIDAR STOCK
-                if ($cantidad > $medicamento->stock) {
-                    return redirect()
-                        ->route('ventas.index')
-                        ->withErrors([
-                            'stock' => "Stock insuficiente para {$medicamento->nombre}"
-                        ])
-                        ->withInput();
-                }
-
-                $subtotal = $medicamento->precio * $cantidad;
-
-                $total += $subtotal;
-
-                // DETALLE
-                DetalleVenta::create([
-                    'venta_id' => $venta->id,
-                    'medicamento_id' => $medicamento->id,
-                    'cantidad' => $cantidad,
-                    'precio' => $medicamento->precio,
-                    'subtotal' => $subtotal
+                $venta = Venta::create([
+                    'cliente_id' => $datos['cliente_id'],
+                    'fecha' => now()->toDateString(),
+                    'total' => 0,
                 ]);
 
-                // DESCONTAR STOCK
-                $medicamento->stock -= $cantidad;
-                $medicamento->save();
-            }
+                foreach ($datos['medicamento_id'] as $index => $medicamentoId) {
+                    $medicamento = Medicamento::whereKey($medicamentoId)
+                        ->lockForUpdate()
+                        ->firstOrFail();
 
-            // ACTUALIZAR TOTAL FINAL
-            $venta->update([
-                'total' => $total
-            ]);
+                    $cantidad = $datos['cantidad'][$index];
 
-            DB::commit();
+                    if ($cantidad > $medicamento->stock) {
+                        throw ValidationException::withMessages([
+                            'stock' => "Stock insuficiente para {$medicamento->nombre}. Disponible: {$medicamento->stock}.",
+                        ]);
+                    }
 
-        } catch (\Exception $e) {
+                    $subtotal = $medicamento->precio * $cantidad;
+                    $total += $subtotal;
 
-            DB::rollBack();
+                    DetalleVenta::create([
+                        'venta_id' => $venta->id,
+                        'medicamento_id' => $medicamento->id,
+                        'cantidad' => $cantidad,
+                        'precio' => $medicamento->precio,
+                        'subtotal' => $subtotal,
+                    ]);
+
+                    $medicamento->decrement('stock', $cantidad);
+                }
+
+                $venta->update([
+                    'total' => $total,
+                ]);
+            });
+        } catch (ValidationException $exception) {
+            throw $exception;
+        } catch (Throwable $exception) {
+            report($exception);
 
             return redirect()
                 ->route('ventas.index')
                 ->withErrors([
-                    'error' => 'Error al registrar la venta: ' . $e->getMessage()
-                ]);
+                    'error' => 'No se pudo registrar la venta. Inténtalo nuevamente.',
+                ])
+                ->withInput();
         }
 
         return redirect()
@@ -115,10 +114,24 @@ class VentaController extends Controller
 
     public function destroy(Venta $venta)
     {
-        $venta->delete();
+        DB::transaction(function () use ($venta) {
+            $venta->load('detalles');
+
+            foreach ($venta->detalles as $detalle) {
+                $medicamento = Medicamento::whereKey($detalle->medicamento_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($medicamento) {
+                    $medicamento->increment('stock', $detalle->cantidad);
+                }
+            }
+
+            $venta->delete();
+        });
 
         return redirect()
             ->route('ventas.index')
-            ->with('success', 'Venta eliminada correctamente.');
+            ->with('success', 'Venta eliminada y stock restaurado correctamente.');
     }
 }

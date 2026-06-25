@@ -5,21 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Cliente extends Model
+class Categoria extends Model
 {
     use HasFactory;
 
-    protected $table = 'clientes';
+    protected $table = 'categorias';
 
     protected $fillable = [
         'nombre',
-        'dni',
-        'telefono',
-        'direccion',
+        'descripcion',
     ];
 
-    public function ventas()
+    public function medicamentos()
     {
-        return $this->hasMany(Venta::class);
+        return $this->hasMany(Medicamento::class);
     }
 }

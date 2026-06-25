@@ -1,249 +1,124 @@
 @extends('PLANTILLA.administrador')
 
 @section('content')
-
 <div class="container mt-4">
-
-    {{-- HEADER --}}
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3>Medicamentos</h3>
+        <div>
+            <h3 class="mb-1">Medicamentos</h3>
+            <p class="text-muted mb-0">Administra el catálogo, precios y existencias.</p>
+        </div>
 
-        {{-- BOTÓN NUEVO --}}
-        <button class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#modalCrear">
-            Nuevo Medicamento
-        </button>
+        <a href="{{ route('medicamentos.create') }}" class="btn btn-primary">
+            <i class="bi bi-plus-circle me-1"></i>
+            Nuevo medicamento
+        </a>
     </div>
 
-    {{-- MENSAJE ÉXITO --}}
-    @if(session('success'))
-        <div class="alert alert-success">
-            {{ session('success') }}
-        </div>
-    @endif
-
-    {{-- ERRORES --}}
-   @if($errors->any())
-        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-        <script>
-        Swal.fire({
-            icon: 'error',
-            title: 'Error en el formulario',
-            html: `{!! implode('<br>', $errors->all()) !!}`
-        });
-        </script>
-    @endif
-
-    {{-- BUSCADOR --}}
-    <input type="text" id="buscar" class="form-control mb-3"
-           placeholder="Buscar medicamento...">
-
-    {{-- TABLA --}}
-    <div class="card">
+    <div class="card shadow-sm">
         <div class="card-body">
-
-            <table class="table table-hover table-striped align-middle">
-                <thead class="table-dark">
-                    <tr>
-                        <th>ID</th>
-                        <th>Nombre</th>
-                        <th>Precio</th>
-                        <th>Stock</th>
-                        <th>Descripción</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-
-                <tbody>
-                    @foreach($medicamentos as $medicamento)
+            <div class="table-responsive">
+                <table id="tablaMedicamentos" class="table table-hover table-striped align-middle w-100">
+                    <thead class="table-dark">
                         <tr>
-                            <td>{{ $medicamento->id }}</td>
-                            <td>{{ $medicamento->nombre }}</td>
-                            <td>{{ $medicamento->precio }}</td>
-                            <td>{{ $medicamento->stock }}</td>
-                            <td>{{ $medicamento->descripcion }}</td>
-
-                            <td>
-
-                                {{-- BOTÓN EDITAR --}}
-                                <button class="btn btn-warning btn-sm"
-                                        data-bs-toggle="modal"
-                                        data-bs-target="#modalEditar{{ $medicamento->id }}">
-                                    Editar
-                                </button>
-
-                                {{-- ELIMINAR --}}
-                                <form action="{{ route('medicamentos.destroy', $medicamento->id) }}"
-                                      method="POST"
-                                      style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-
-                                    <button class="btn btn-danger btn-sm"
-                                            onclick="return confirm('¿Eliminar medicamento?')">
-                                        Eliminar
-                                    </button>
-                                </form>
-
-                            </td>
+                            <th>ID</th>
+                            <th>Imagen</th>
+                            <th>Nombre</th>
+                            <th>Categoría</th>
+                            <th>Slug</th>
+                            <th>Precio</th>
+                            <th>Stock</th>
+                            <th>Descripción</th>
+                            <th>Acciones</th>
                         </tr>
+                    </thead>
 
-                        {{-- MODAL EDITAR --}}
-                        <div class="modal fade" id="modalEditar{{ $medicamento->id }}" tabindex="-1">
-                            <div class="modal-dialog">
-                                <div class="modal-content">
+                    <tbody>
+                        @foreach($medicamentos as $medicamento)
+                            <tr>
+                                <td>{{ $medicamento->id }}</td>
+                                <td>
+                                    @if($medicamento->imagen)
+                                        <img
+                                            src="{{ asset('storage/' . $medicamento->imagen) }}"
+                                            alt="Imagen de {{ $medicamento->nombre }}"
+                                            class="rounded border"
+                                            style="width: 56px; height: 56px; object-fit: cover;">
+                                    @else
+                                        <span class="badge text-bg-light">Sin imagen</span>
+                                    @endif
+                                </td>
+                                <td>{{ $medicamento->nombre }}</td>
+                                <td>{{ optional($medicamento->categoria)->nombre ?? 'Sin categoría' }}</td>
+                                <td><code>{{ $medicamento->slug }}</code></td>
+                                <td>S/ {{ number_format($medicamento->precio, 2) }}</td>
+                                <td>
+                                    <span class="badge {{ $medicamento->stock <= 5 ? 'text-bg-danger' : 'text-bg-success' }}">
+                                        {{ $medicamento->stock }}
+                                    </span>
+                                </td>
+                                <td>{{ $medicamento->descripcion }}</td>
+                                <td class="text-nowrap">
+                                    <a
+                                        href="{{ route('medicamentos.edit', $medicamento) }}"
+                                        class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil-square"></i>
+                                        Editar
+                                    </a>
 
-                                    <form action="{{ route('medicamentos.update', $medicamento->id) }}" method="POST">
+                                    <form
+                                        action="{{ route('medicamentos.destroy', $medicamento) }}"
+                                        method="POST"
+                                        class="d-inline form-eliminar"
+                                        data-nombre="el medicamento {{ $medicamento->nombre }}">
                                         @csrf
-                                        @method('PUT')
+                                        @method('DELETE')
 
-                                        <div class="modal-header">
-                                            <h5 class="modal-title">Editar Medicamento</h5>
-                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                                        </div>
-
-                                        <div class="modal-body">
-
-                                            <div class="mb-2">
-                                                <label>Nombre</label>
-                                                <input type="text" name="nombre" class="form-control"
-                                                       value="{{ $medicamento->nombre }}">
-                                            </div>
-
-                                            <div class="mb-2">
-                                                <label>Precio</label>
-                                                <input type="number" step="0.01" name="precio" class="form-control"
-                                                       value="{{ $medicamento->precio }}">
-                                            </div>
-
-                                            <div class="mb-2">
-                                                <label>Stock</label>
-                                                <input type="number" name="stock" class="form-control"
-                                                       value="{{ $medicamento->stock }}">
-                                            </div>
-
-                                            <div class="mb-2">
-                                                <label>Descripción</label>
-                                                <input type="text" name="descripcion" class="form-control"
-                                                       value="{{ $medicamento->descripcion }}">
-                                            </div>
-
-                                        </div>
-
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                                Cancelar
-                                            </button>
-
-                                            <button class="btn btn-primary">
-                                                Guardar cambios
-                                            </button>
-                                        </div>
-
+                                        <button type="submit" class="btn btn-danger btn-sm">
+                                            <i class="bi bi-trash"></i>
+                                            Eliminar
+                                        </button>
                                     </form>
-
-                                </div>
-                            </div>
-                        </div>
-
-                    @endforeach
-                </tbody>
-
-            </table>
-
-        </div>
-    </div>
-
-</div>
-
-{{-- MODAL CREAR --}}
-<div class="modal fade" id="modalCrear" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-
-            <form action="{{ route('medicamentos.store') }}" method="POST">
-                @csrf
-
-                <div class="modal-header">
-                    <h5 class="modal-title">Nuevo Medicamento</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-
-                    <div class="mb-2">
-                        <label>Nombre</label>
-                        <input type="text" name="nombre" class="form-control">
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Precio</label>
-                        <input type="number" step="0.01" name="precio" class="form-control">
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Stock</label>
-                        <input type="number" name="stock" class="form-control">
-                    </div>
-
-                    <div class="mb-2">
-                        <label>Descripción</label>
-                        <input type="text" name="descripcion" class="form-control">
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        Cancelar
-                    </button>
-
-                    <button class="btn btn-success">
-                        Guardar
-                    </button>
-                </div>
-
-            </form>
-
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 </div>
+@endsection
 
-{{-- BUSCADOR JS --}}
+@section('scripts')
 <script>
-document.getElementById("buscar").addEventListener("keyup", function() {
-    let value = this.value.toLowerCase();
-    let rows = document.querySelectorAll("tbody tr");
-
-    rows.forEach(row => {
-        row.style.display =
-            row.innerText.toLowerCase().includes(value)
-            ? ""
-            : "none";
+    document.addEventListener('DOMContentLoaded', function () {
+        new DataTable('#tablaMedicamentos', {
+            pageLength: 10,
+            lengthMenu: [5, 10, 25, 50],
+            order: [[0, 'desc']],
+            columnDefs: [
+                {
+                    targets: [1, 8],
+                    orderable: false,
+                    searchable: false
+                }
+            ],
+            language: {
+                search: 'Buscar medicamento:',
+                lengthMenu: 'Mostrar _MENU_ medicamentos',
+                info: 'Mostrando _START_ a _END_ de _TOTAL_ medicamentos',
+                infoEmpty: 'No hay medicamentos registrados',
+                infoFiltered: '(filtrado de _MAX_ registros)',
+                zeroRecords: 'No se encontraron medicamentos',
+                emptyTable: 'No hay medicamentos disponibles',
+                paginate: {
+                    first: 'Primero',
+                    last: 'Último',
+                    next: 'Siguiente',
+                    previous: 'Anterior'
+                }
+            }
+        });
     });
-});
 </script>
-
-
-
-@if($errors->any())
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-@if($errors->any())
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-<script>
-Swal.fire({
-    icon: 'error',
-    title: 'Error en el formulario',
-    html: `{!! implode('<br>', $errors->all()) !!}`
-});
-</script>
-@endif
-
-</script>
-@endif
-
 @endsection
