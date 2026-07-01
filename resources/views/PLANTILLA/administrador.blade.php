@@ -70,7 +70,8 @@
                     Configuraciones
                 </a>
 
-                <a href="#" class="menu-link">
+                <a href="{{ route('reportes.index') }}"
+                    class="menu-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}">
                     <i class="bi bi-bar-chart me-2"></i>
                     Reportes
                 </a>

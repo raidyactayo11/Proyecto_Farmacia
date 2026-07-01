@@ -8,6 +8,7 @@ use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\MedicamentoController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\VentaController;
+use App\Http\Controllers\ReporteController;
 
 /*
 |--------------------------------------------------------------------------
@@ -69,3 +70,11 @@ Route::post('/ventas', [VentaController::class, 'store'])
 
 Route::delete('/ventas/{venta}', [VentaController::class, 'destroy'])
     ->name('ventas.destroy');
+/*
+|--------------------------------------------------------------------------
+| REPORTES
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/reportes', [ReporteController::class, 'index'])
+    ->name('reportes.index');
