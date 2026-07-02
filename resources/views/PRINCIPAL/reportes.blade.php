@@ -1,10 +1,42 @@
 @extends('PLANTILLA.administrador')
 
 @section('content')
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3 mb-4">
     <div>
         <h1 class="h3 mb-1">Reportes</h1>
         <p class="text-muted mb-0">Consulta información importante del sistema</p>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2">
+        <a href="{{ route('reportes.medicamentos.pdf') }}" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i>
+            PDF Medicamentos
+        </a>
+
+        <a href="{{ route('reportes.ventas.pdf') }}" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i>
+            PDF Ventas
+        </a>
+
+        <a href="{{ route('reportes.clientes.pdf') }}" class="btn btn-danger">
+            <i class="bi bi-file-earmark-pdf"></i>
+            PDF Clientes
+        </a>
+
+        <a href="{{ route('reportes.medicamentos.excel') }}" class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i>
+            Excel Medicamentos
+        </a>
+
+        <a href="{{ route('reportes.ventas.excel') }}" class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i>
+            Excel Ventas
+        </a>
+
+        <a href="{{ route('reportes.clientes.excel') }}" class="btn btn-success">
+            <i class="bi bi-file-earmark-excel"></i>
+            Excel Clientes
+        </a>
     </div>
 </div>
 

@@ -5,14 +5,36 @@ namespace Tests\Feature;
 use App\Models\Categoria;
 use App\Models\Cliente;
 use App\Models\Medicamento;
+use App\Models\Role;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class CrudFasesUnoCuatroTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $rol = Role::create([
+            'nombre' => 'Administrador',
+            'descripcion' => 'Acceso completo al sistema',
+        ]);
+
+        $usuario = User::create([
+            'name' => 'Administrador',
+            'email' => 'admin@test.com',
+            'password' => Hash::make('password'),
+            'role_id' => $rol->id,
+        ]);
+
+        $this->actingAs($usuario);
+    }
 
     public function test_puede_registrar_una_categoria()
     {

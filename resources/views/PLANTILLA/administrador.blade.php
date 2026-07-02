@@ -51,8 +51,8 @@
                     aria-label="Avatar del administrador">
                 </div>
 
-                <h6 class="mt-2">Administrador</h6>
-                <span class="badge text-bg-primary">General</span>
+                <h6 class="mt-2">{{ auth()->user()->name ?? 'Usuario' }}</h6>
+                <span class="badge text-bg-primary">{{ auth()->user()->role->nombre ?? 'General' }}</span>
             </div>
 
             <h6 class="text-muted fw-bold">PRINCIPAL</h6>
@@ -123,13 +123,20 @@
                         type="button"
                         data-bs-toggle="dropdown"
                         aria-expanded="false">
-                        Raid RRY
+                        {{ auth()->user()->name ?? 'Usuario' }}
                     </button>
 
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="#">Mi perfil</a></li>
                         <li><a class="dropdown-item" href="#">Mis notificaciones</a></li>
-                        <li><a class="dropdown-item" href="#">Cerrar sesión</a></li>
+                        <li>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="dropdown-item">
+                                    Cerrar sesión
+                                </button>
+                            </form>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -146,6 +153,7 @@
 <script src="https://cdn.datatables.net/2.3.8/js/dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/2.3.8/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 @if(session('success'))
     <script>
